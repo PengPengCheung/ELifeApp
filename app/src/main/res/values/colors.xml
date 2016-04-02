@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="colorTabBackground">#9e0c0b</color>
+    <color name="colorTabTvBg">#800201</color>
+    <color name="colorTabTv">#ffffff</color>
+    <color name="icons">#FFFFFF</color>
+    <color name="colorExerciseTab">#323232</color>
+
+    <color name="primary">#F44336</color>
+    <color name="primary_dark">#D32F2F</color>
+    <color name="primary_light">#FFCDD2</color>
+    <color name="accent">#CDDC39</color>
+    <color name="primary_text">#212121</color>
+    <color name="secondary_text">#727272</color>
+    <color name="divider">#B6B6B6</color>
+    <color name="color_main_player">#e1dfe0</color>
+    <color name="color_exercise_div">#9e0d0b</color>
+    <color name="color_exercise_tips">#b1b1b1</color>
+    <color name="color_title_bar">#3e3838</color>
+
+</resources>

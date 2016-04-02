@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">ELifeListenAPP</string>
+    <string name="movie">Movie</string>
+    <string name="speech">Speech</string>
+    <string name="news">News</string>
+    <string name="part_one">part1</string>
+    <string name="part_two">part2</string>
+    <string name="part_three">part3</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>
