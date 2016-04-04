@@ -21,6 +21,8 @@ public class Resource {
         public static final String PLAYER_ACTIVITY = "PLAYER_ACTIVITY";
         public static final int PLAYER_ACTIVITY_VALUE = 2;
         public static final String FILTER_SIGNAL = "FILTER_SIGNAL";  //用于区分各个activity传给service的广播
+        public static final String PLAYER_ACTIVITY_SEEKBAR = "ACTIVITY_SEEKBAR";
+        public static final String PLAYER_SERVICE_SEEKBAR = "SERVICE_SEEKBAR";
     }
 
     public static final class Path{
@@ -49,6 +51,10 @@ public class Resource {
         public static final String AUDIO_STATUS = "audioStatus"; //前台activity之间用于更新player状态，不作为发送给服务的键，其对应的键值为player的状态，注意与UPDATE_KEY的区别
         public static final String AUDIO_TYPE = "audioType";
         public static final String AUDIO_INDEX = "audioIndex";
+        public static final String AUDIO_DURATION = "audioDuration";
+        public static final String SEEKBAR_PROGRESS = "SeekBarProgress";
+        public static final String SEEKBAR_MAX = "SeekBarMax";
+
     }
 
     public static final class PlayerStatus{

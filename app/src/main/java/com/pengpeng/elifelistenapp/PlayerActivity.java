@@ -5,8 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -54,54 +52,25 @@ public class PlayerActivity extends ELifeBaseActivity implements View.OnClickLis
     @ViewInject(R.id.tv_audio_title)
     private TextView mTVAudioTitle;
 
-    private NetworkAudioPlayer mPlayer;
+//    private NetworkAudioPlayer mPlayer;
     private Audio mAudio;
     private AudioListManager mManager;
     private int index;
     private PlayerActivityReceiver mReceiver;
+    private SeekbarUpdateReceiver mSeekBarReceiver;
 
-    Handler handler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case 0:
-                    updateProgress();
-                    break;
-            }
-        }
-    };
 
-//    private static Handler handler = new Handler() {
-//        @Override
-//        public void handleMessage(Message msg) {
-//            switch (msg.what) {
-//                case 0:
-//                    updateProgress();
-//                    break;
-//            }
-//        }
-//    };
-
-    private void updateProgress() {
+    private void updateProgress(int progress) {
         if (mAudio != null) {
-            Log.e(TAG, "audio not null");
-//            if(mPlayer == null || mPlayer.isStopFlag()){
-//                mTVStart.setText("0:00");
-//                mSeekbar.setProgress(0);
-//                return;
-//            }
-            if (mPlayer.isFlag()) {
                 int totalTime = mAudio.getAudioPartEndTime().get(2);
-                int currentTime = mPlayer.getCurrentPosition();
+                int currentTime = progress;
                 int seekBarMax = mSeekbar.getMax();
                 Log.e("Progress: ", totalTime + " " + currentTime + " " + seekBarMax);
-//                if (currentTime < endTime || currentTime >= startTime) {
                 if (totalTime > 0 && currentTime > 0 && seekBarMax > 0) {
                     Log.i("Progress: ", String.valueOf(mSeekbar.getProgress()));
                     mTVStart.setText(Tools.getTimeText(currentTime));
                     mSeekbar.setProgress((int) (seekBarMax * (float) currentTime / totalTime));
                 }
-            }
         }
     }
 
@@ -131,12 +100,6 @@ public class PlayerActivity extends ELifeBaseActivity implements View.OnClickLis
                 mSeekbar.setProgress(0);
                 break;
         }
-        Log.i(TAG, "status " + status);
-        if(mPlayer!=null){
-            Log.i(TAG, "" + mPlayer.isPaused());
-        }
-//        mPlayer.playPause();
-
     }
 
     private void init() {
@@ -147,16 +110,18 @@ public class PlayerActivity extends ELifeBaseActivity implements View.OnClickLis
         mIVPreviousBtn.setOnClickListener(this);
         mIVLoopBtn.setOnClickListener(this);
         mSeekbar.setOnSeekBarChangeListener(new ProgressBarListener());
-        mPlayer = NetworkAudioPlayer.getInstance(getApplicationContext());
         mManager = ((ELifeApplication)getApplication()).getManager();
         mAudio = mManager.get(index);
+
         mReceiver = new PlayerActivityReceiver();
         IntentFilter filter = new IntentFilter(Resource.Filter.PLAYER_ACTIVITY);
         registerReceiver(mReceiver, filter);
 
+        mSeekBarReceiver = new SeekbarUpdateReceiver();
+        IntentFilter seekBarFilter = new IntentFilter(Resource.Filter.PLAYER_ACTIVITY_SEEKBAR);
+        registerReceiver(mSeekBarReceiver, seekBarFilter);
+
         mTVEnd.setText(Tools.getTimeText(mAudio.getAudioPartEndTime().get(2)));
-        UpdateSeekBarThread thread = new UpdateSeekBarThread();
-        thread.start();
 
     }
 
@@ -237,7 +202,11 @@ public class PlayerActivity extends ELifeBaseActivity implements View.OnClickLis
         @Override
         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
             if (fromUser) {
-                mPlayer.seekTo((int) (mAudio.getAudioPartEndTime().get(2) * (float) seekBar.getProgress() / seekBar.getMax()));
+                Intent intent = new Intent(Resource.Filter.PLAYER_SERVICE_SEEKBAR);
+                intent.putExtra(Resource.ParamsKey.AUDIO_DURATION, mAudio.getAudioPartEndTime().get(2));
+                intent.putExtra(Resource.ParamsKey.SEEKBAR_PROGRESS, seekBar.getProgress());
+                intent.putExtra(Resource.ParamsKey.SEEKBAR_MAX, seekBar.getMax());
+                sendBroadcast(intent);
                 seekBar.setProgress(progress);
             }
         }
@@ -253,33 +222,27 @@ public class PlayerActivity extends ELifeBaseActivity implements View.OnClickLis
         }
     }
 
-    public class UpdateSeekBarThread extends Thread {
-        @Override
-        public void run() {
-
-//            Looper.prepare();
-
-            Log.i("thread","run");
-            mPlayer.setFlag(true);
-
-            while (mPlayer.isFlag()) {
-                try {
-                    Thread.sleep(30);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                handler.sendEmptyMessage(0);
-            }
-
-//            Looper.loop();
-
-        }
-    }
-
     @Override
     protected void onDestroy() {
         unregisterReceiver(mReceiver);
+        unregisterReceiver(mSeekBarReceiver);
         super.onDestroy();
+    }
+
+    class SeekbarUpdateReceiver extends BroadcastReceiver{
+        /**
+         * @param context The Context in which the receiver is running.
+         * @param intent  The Intent being received.
+         */
+        @Override
+        public void onReceive(Context context, Intent intent) {
+           if(intent != null){
+               int progress = intent.getIntExtra(Resource.PlayerStatus.GET_PROGRESS_KEY, -1);
+               if(progress!=-1){
+                   updateProgress(progress);
+               }
+           }
+        }
     }
 
     class PlayerActivityReceiver extends BroadcastReceiver {
@@ -291,16 +254,10 @@ public class PlayerActivity extends ELifeBaseActivity implements View.OnClickLis
         @Override
         public void onReceive(Context context, Intent intent) {
             if(intent != null){
-//                int progress = intent.getIntExtra(Resource.PlayerStatus.GET_PROGRESS_KEY, -1);
-//                if(progress!=-1){
-//                    Log.i("Progress", ""+progress);
-//                }
-
                 int status = intent.getIntExtra(Resource.PlayerStatus.UPDATE_KEY, -1);
                 switch (status){
                     case Resource.PlayerStatus.PLAYING:
                         mIVPlayBtn.setImageResource(R.drawable.pause);
-                        //设置进度条进度、开始时间和结束时间，如果换了音频材料要改变音频标题
                         break;
                     case Resource.PlayerStatus.PAUSE:
                         mIVPlayBtn.setImageResource(R.drawable.play);

@@ -21,6 +21,7 @@ public class AudioPlayerService extends Service implements MediaPlayer.OnPrepare
     private int status = Resource.PlayerStatus.STOP;
     private boolean sourceChanged = false;
     private int progress = 0;
+    private SeekBarUpdateReceiver mSeekBarReceiver;
 
     public AudioPlayerService() {
     }
@@ -38,23 +39,29 @@ public class AudioPlayerService extends Service implements MediaPlayer.OnPrepare
 
     }
 
-//    public class UpdateSeekBarThread extends Thread {
-//        @Override
-//        public void run() {
-//            Intent intent  = new Intent(Resource.Filter.PLAYER_ACTIVITY);
-//            while (mPlayer != null) {
-//                try {
-//                    Thread.sleep(30);
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-////                handler.sendEmptyMessage(0);
-//                intent.putExtra(Resource.PlayerStatus.GET_PROGRESS_KEY, mPlayer.getCurrentPosition());
-//                sendBroadcast(intent);
-//            }
-//
-//        }
-//    }
+    public class UpdateSeekBarThread extends Thread {
+        @Override
+        public void run() {
+            Intent intent  = new Intent(Resource.Filter.PLAYER_ACTIVITY_SEEKBAR);
+            while (mPlayer != null) {
+                try {
+                    Thread.sleep(30);
+                    if(status == Resource.PlayerStatus.STOP){
+                        progress = 0;
+                    }else if(status == Resource.PlayerStatus.PLAYING){
+                        progress = mPlayer.getCurrentPosition();
+                    }
+
+                    intent.putExtra(Resource.PlayerStatus.GET_PROGRESS_KEY, progress);
+                    sendBroadcast(intent);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }catch(Exception e){
+                    break;
+                }
+            }
+        }
+    }
 
 
     private void init() {
@@ -70,6 +77,12 @@ public class AudioPlayerService extends Service implements MediaPlayer.OnPrepare
         IntentFilter filter = new IntentFilter(Resource.Filter.PLAYER_SERVICE);
         registerReceiver(mReceiver, filter);
 
+        mSeekBarReceiver = new SeekBarUpdateReceiver();
+        IntentFilter seekBarFilter = new IntentFilter(Resource.Filter.PLAYER_SERVICE_SEEKBAR);
+        registerReceiver(mSeekBarReceiver, seekBarFilter);
+
+        UpdateSeekBarThread thread = new UpdateSeekBarThread();
+        thread.start();
 
     }
 
@@ -110,8 +123,21 @@ public class AudioPlayerService extends Service implements MediaPlayer.OnPrepare
             mPlayer = null;
         }
         unregisterReceiver(mReceiver);
+        unregisterReceiver(mSeekBarReceiver);
         Log.i(Resource.Debug.TAG, "Service Destroy");
         super.onDestroy();
+    }
+
+    class SeekBarUpdateReceiver extends BroadcastReceiver{
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(intent != null){
+                int duration = intent.getIntExtra(Resource.ParamsKey.AUDIO_DURATION, -1);
+                int seekBarMax = intent.getIntExtra(Resource.ParamsKey.SEEKBAR_MAX, -1);
+                int seekBarProgress = intent.getIntExtra(Resource.ParamsKey.SEEKBAR_PROGRESS, -1);
+                mPlayer.seekTo((int) (duration * (float) seekBarProgress / seekBarMax));
+            }
+        }
     }
 
     class AudioPlayerReceiver extends BroadcastReceiver {
@@ -251,133 +277,133 @@ public class AudioPlayerService extends Service implements MediaPlayer.OnPrepare
             status = Resource.PlayerStatus.STOP;
         }
 
-        private void handlePlayerIntent2(Intent intent) {
-            int control = intent.getIntExtra(Resource.PlayerStatus.CONTROL_KEY, -1);
-            String audioUrl = intent.getStringExtra(Resource.ParamsKey.AUDIO_URL);
-            if (audioUrl != null) {
-                mPlayer.setSourceUrl(audioUrl);
-                sourceChanged = true;
-            }
-            switch (control) {
-                case Resource.PlayerStatus.CONTROL_PLAY_BTN:
-                    if (status == Resource.PlayerStatus.PLAYING) {
-                        if (sourceChanged) {
-                            mPlayer.play();
-                            status = Resource.PlayerStatus.PLAYING;
-                            sourceChanged = false;
-                        } else {
-                            mPlayer.playPause();
-                            status = Resource.PlayerStatus.PAUSE;
-                        }
-                    } else {
-                        if (sourceChanged) {
-                            mPlayer.setPaused(false);//因为换音频材料，所以paused状态为false
-                        }
-                        mPlayer.play();
-                        status = Resource.PlayerStatus.PLAYING;
-                        sourceChanged = false;
-                    }
-                    break;
-                case Resource.PlayerStatus.CONTROL_NEXT_BTN:
-                    handleSourceChanged();
-                    break;
-                case Resource.PlayerStatus.CONTROL_PREVIOUS_BTN:
-                    handleSourceChanged();
-                    break;
-                case Resource.PlayerStatus.CONTROL_LOOP_BTN:
-                    mPlayer.setLooping(true);
-                    break;
-            }
+//        private void handlePlayerIntent2(Intent intent) {
+//            int control = intent.getIntExtra(Resource.PlayerStatus.CONTROL_KEY, -1);
+//            String audioUrl = intent.getStringExtra(Resource.ParamsKey.AUDIO_URL);
+//            if (audioUrl != null) {
+//                mPlayer.setSourceUrl(audioUrl);
+//                sourceChanged = true;
+//            }
+//            switch (control) {
+//                case Resource.PlayerStatus.CONTROL_PLAY_BTN:
+//                    if (status == Resource.PlayerStatus.PLAYING) {
+//                        if (sourceChanged) {
+//                            mPlayer.play();
+//                            status = Resource.PlayerStatus.PLAYING;
+//                            sourceChanged = false;
+//                        } else {
+//                            mPlayer.playPause();
+//                            status = Resource.PlayerStatus.PAUSE;
+//                        }
+//                    } else {
+//                        if (sourceChanged) {
+//                            mPlayer.setPaused(false);//因为换音频材料，所以paused状态为false
+//                        }
+//                        mPlayer.play();
+//                        status = Resource.PlayerStatus.PLAYING;
+//                        sourceChanged = false;
+//                    }
+//                    break;
+//                case Resource.PlayerStatus.CONTROL_NEXT_BTN:
+//                    handleSourceChanged();
+//                    break;
+//                case Resource.PlayerStatus.CONTROL_PREVIOUS_BTN:
+//                    handleSourceChanged();
+//                    break;
+//                case Resource.PlayerStatus.CONTROL_LOOP_BTN:
+//                    mPlayer.setLooping(true);
+//                    break;
+//            }
+//
+//            Log.i("AudioPlayerService", "handlePlayerIntent");
+//
+//            Intent sendToPlayer = new Intent(Resource.Filter.PLAYER_ACTIVITY);
+//            sendToPlayer.putExtra(Resource.PlayerStatus.UPDATE_KEY, status);
+////            sendToPlayer.putExtra(Resource.PlayerStatus.GET_PROGRESS_KEY, mPlayer.getCurrentPosition());
+//            sendBroadcast(sendToPlayer);
+//
+//            Intent sendToMain = new Intent(Resource.Filter.MAIN_ACTIVITY);
+//            sendToMain.putExtra(Resource.PlayerStatus.UPDATE_KEY, status);
+//            sendBroadcast(sendToMain);
+//
+//        }
 
-            Log.i("AudioPlayerService", "handlePlayerIntent");
-
-            Intent sendToPlayer = new Intent(Resource.Filter.PLAYER_ACTIVITY);
-            sendToPlayer.putExtra(Resource.PlayerStatus.UPDATE_KEY, status);
-//            sendToPlayer.putExtra(Resource.PlayerStatus.GET_PROGRESS_KEY, mPlayer.getCurrentPosition());
-            sendBroadcast(sendToPlayer);
-
-            Intent sendToMain = new Intent(Resource.Filter.MAIN_ACTIVITY);
-            sendToMain.putExtra(Resource.PlayerStatus.UPDATE_KEY, status);
-            sendBroadcast(sendToMain);
-
-        }
-
-        private void handleSourceChanged() {
-            if (status == Resource.PlayerStatus.PLAYING) {
-                if (sourceChanged) {
-                    mPlayer.stop();
-                    mPlayer.play();
-                    status = Resource.PlayerStatus.PLAYING;
-                    sourceChanged = false;
-                }
-            } else {
-                if (sourceChanged) {
-                    mPlayer.setPaused(false);//因为换音频材料，所以paused状态为false
-                }
-                mPlayer.stop();
-                mPlayer.play();
-                status = Resource.PlayerStatus.PLAYING;
-                sourceChanged = false;
-            }
-        }
-
-        private void handleMainIntent2(Intent intent) {
-            String audioUrl = intent.getStringExtra(Resource.ParamsKey.AUDIO_URL);
-            int control = intent.getIntExtra(Resource.PlayerStatus.CONTROL_KEY, -1);
-            if (audioUrl != null) {
-                Log.i(Resource.Debug.TAG, audioUrl);
-                mPlayer.setSourceUrl(audioUrl);
-                sourceChanged = true;
-            }
-            if (mPlayer.getSourceUrl() != null) {
-                Log.i("PlayerURL", mPlayer.getSourceUrl());
-                switch (control) {
-                    case Resource.PlayerStatus.CONTROL_PLAY_BTN:
-
-                        if (status == Resource.PlayerStatus.PLAYING) {
-                            Log.i("Player", "1");
-                            if (sourceChanged) {
-                                Log.i("Player", "2");
-                                mPlayer.play();
-                                Log.i("Player", "3");
-                                status = Resource.PlayerStatus.PLAYING;
-                                sourceChanged = false;
-                            } else {
-                                Log.i("Player", "4");
-                                mPlayer.playPause();
-                                Log.i("Player", "5");
-                                status = Resource.PlayerStatus.PAUSE;
-                            }
-                        } else {
-                            Log.i("Player", "6");
-                            Log.i("Player", "" + mPlayer.isPaused());
-                            if (sourceChanged) {
-                                mPlayer.setPaused(false);//因为换音频材料，所以paused状态为false
-                            }
-                            Log.i("Player", "" + mPlayer.isPaused() + " " + sourceChanged);
-                            mPlayer.play();
-                            Log.i("Player", "7");
-                            status = Resource.PlayerStatus.PLAYING;
-                            sourceChanged = false;
-                        }
-                        Log.i(Resource.Debug.TAG, "CONTROL_PLAY_BTN " + status);
-                        break;
-                    case Resource.PlayerStatus.CONTROL_STOP_BTN:
-                        if (status == Resource.PlayerStatus.PLAYING || status == Resource.PlayerStatus.PAUSE) {
-                            mPlayer.stop();
-                            status = Resource.PlayerStatus.STOP;
-                        }
-                        Log.i(Resource.Debug.TAG, "CONTROL_STOP_BTN " + status);
-                        break;
-                }
-                sourceChanged = false;
-            }
-
-            Log.i(Resource.Debug.TAG, "Service send " + status);
-            Intent sendToAct = new Intent(Resource.Filter.MAIN_ACTIVITY);
-            sendToAct.putExtra(Resource.PlayerStatus.UPDATE_KEY, status);
-            sendBroadcast(sendToAct);
-        }
+//        private void handleSourceChanged() {
+//            if (status == Resource.PlayerStatus.PLAYING) {
+//                if (sourceChanged) {
+//                    mPlayer.stop();
+//                    mPlayer.play();
+//                    status = Resource.PlayerStatus.PLAYING;
+//                    sourceChanged = false;
+//                }
+//            } else {
+//                if (sourceChanged) {
+//                    mPlayer.setPaused(false);//因为换音频材料，所以paused状态为false
+//                }
+//                mPlayer.stop();
+//                mPlayer.play();
+//                status = Resource.PlayerStatus.PLAYING;
+//                sourceChanged = false;
+//            }
+//        }
+//
+//        private void handleMainIntent2(Intent intent) {
+//            String audioUrl = intent.getStringExtra(Resource.ParamsKey.AUDIO_URL);
+//            int control = intent.getIntExtra(Resource.PlayerStatus.CONTROL_KEY, -1);
+//            if (audioUrl != null) {
+//                Log.i(Resource.Debug.TAG, audioUrl);
+//                mPlayer.setSourceUrl(audioUrl);
+//                sourceChanged = true;
+//            }
+//            if (mPlayer.getSourceUrl() != null) {
+//                Log.i("PlayerURL", mPlayer.getSourceUrl());
+//                switch (control) {
+//                    case Resource.PlayerStatus.CONTROL_PLAY_BTN:
+//
+//                        if (status == Resource.PlayerStatus.PLAYING) {
+//                            Log.i("Player", "1");
+//                            if (sourceChanged) {
+//                                Log.i("Player", "2");
+//                                mPlayer.play();
+//                                Log.i("Player", "3");
+//                                status = Resource.PlayerStatus.PLAYING;
+//                                sourceChanged = false;
+//                            } else {
+//                                Log.i("Player", "4");
+//                                mPlayer.playPause();
+//                                Log.i("Player", "5");
+//                                status = Resource.PlayerStatus.PAUSE;
+//                            }
+//                        } else {
+//                            Log.i("Player", "6");
+//                            Log.i("Player", "" + mPlayer.isPaused());
+//                            if (sourceChanged) {
+//                                mPlayer.setPaused(false);//因为换音频材料，所以paused状态为false
+//                            }
+//                            Log.i("Player", "" + mPlayer.isPaused() + " " + sourceChanged);
+//                            mPlayer.play();
+//                            Log.i("Player", "7");
+//                            status = Resource.PlayerStatus.PLAYING;
+//                            sourceChanged = false;
+//                        }
+//                        Log.i(Resource.Debug.TAG, "CONTROL_PLAY_BTN " + status);
+//                        break;
+//                    case Resource.PlayerStatus.CONTROL_STOP_BTN:
+//                        if (status == Resource.PlayerStatus.PLAYING || status == Resource.PlayerStatus.PAUSE) {
+//                            mPlayer.stop();
+//                            status = Resource.PlayerStatus.STOP;
+//                        }
+//                        Log.i(Resource.Debug.TAG, "CONTROL_STOP_BTN " + status);
+//                        break;
+//                }
+//                sourceChanged = false;
+//            }
+//
+//            Log.i(Resource.Debug.TAG, "Service send " + status);
+//            Intent sendToAct = new Intent(Resource.Filter.MAIN_ACTIVITY);
+//            sendToAct.putExtra(Resource.PlayerStatus.UPDATE_KEY, status);
+//            sendBroadcast(sendToAct);
+//        }
 
     }
 }
