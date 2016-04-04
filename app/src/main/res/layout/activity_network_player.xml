@@ -70,20 +70,20 @@
         android:background="#e1e0e0" >
 
         <TextView
-            android:id="@+id/tv_song_name"
+            android:id="@+id/tv_audio_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:padding="0dp"
             android:text="Around the world"
             android:textColor="#565656"
-            android:textSize="37sp" />
+            android:textSize="25sp" />
 
         <TextView
             android:id="@+id/tv_detail"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/tv_song_name"
+            android:layout_below="@+id/tv_audio_title"
             android:layout_centerInParent="true"
             android:padding="0dp"
             android:text="Daft punk"
@@ -139,7 +139,7 @@
         android:layout_above="@+id/rl_icon" >
 
         <ImageView
-            android:id="@+id/iv_recycle"
+            android:id="@+id/iv_loop"
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:layout_centerVertical="true"

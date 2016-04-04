@@ -1,12 +1,9 @@
 package com.pengpeng.elifelistenapp.ELifePresenter;
 
-import android.util.Log;
-
 import com.pengpeng.elifelistenapp.ELifeDataApi.DataApi;
 import com.pengpeng.elifelistenapp.ELifeDataApi.DataApiImpl;
 import com.pengpeng.elifelistenapp.ELifeModel.Audio;
 import com.pengpeng.elifelistenapp.ELifeView.AudioListIView;
-import com.pengpeng.elifelistenapp.utils.Resource;
 
 import java.util.List;
 
@@ -34,20 +31,14 @@ public class AudioListPresenterImpl implements AudioListPresenter, DataApiImpl.o
 
     @Override
     public void onSuccess(List<Audio> audioList) {
-        Log.i(Resource.Debug.TAG, "enterOnSuccess");
         mView.hideProgress();
-        Log.i(Resource.Debug.TAG, "hideProgress_success");
         mView.addAudio(audioList);
-        Log.i(Resource.Debug.TAG, "addAudio");
 
     }
 
     @Override
     public void onFailure(String msg, Exception e) {
-        Log.i(Resource.Debug.TAG, "enterOnFailure");
         mView.hideProgress();
-        Log.i(Resource.Debug.TAG, "hideProgress_fail");
         mView.showLoadFailMsg();
-        Log.i(Resource.Debug.TAG, "showLoadFailMsg");
     }
 }

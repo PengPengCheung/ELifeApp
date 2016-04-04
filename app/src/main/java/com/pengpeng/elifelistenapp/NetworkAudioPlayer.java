@@ -17,6 +17,26 @@ public class NetworkAudioPlayer extends MediaPlayer implements IAudioPlayer {
     private Context context;
     private boolean paused = false;
 
+    public boolean isFlag() {
+        return flag;
+    }
+
+    public void setFlag(boolean flag) {
+        this.flag = flag;
+    }
+
+    private boolean flag = false;  //mediaplayer没有被最终销毁
+
+    public boolean isStopFlag() {
+        return stopFlag;
+    }
+
+    private void setStopFlag(boolean stopFlag) {
+        this.stopFlag = stopFlag;
+    }
+
+    private boolean stopFlag = false;
+
     public boolean isPrepared() {
         return prepared;
     }
@@ -59,7 +79,7 @@ public class NetworkAudioPlayer extends MediaPlayer implements IAudioPlayer {
 
 
 
-    public String getSourceUrl() throws IOException {
+    public String getSourceUrl(){
         return this.sourceUrl;
     }
 
@@ -103,6 +123,7 @@ public class NetworkAudioPlayer extends MediaPlayer implements IAudioPlayer {
                 if(player!=null){
                     Log.e("playPrepared","not null");
                 }
+
                 reset();
                 Log.e("playPrepared", "2");
                 setDataSource(getSourceUrl());
@@ -126,5 +147,12 @@ public class NetworkAudioPlayer extends MediaPlayer implements IAudioPlayer {
             playPrepared();
         }
     }
+
+    @Override
+    public void stop() throws IllegalStateException {
+        super.stop();
+        setFlag(true);
+    }
+
 }
 

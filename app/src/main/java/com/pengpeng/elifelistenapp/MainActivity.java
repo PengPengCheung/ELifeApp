@@ -28,7 +28,7 @@ public class MainActivity extends ELifeBaseActivity implements View.OnClickListe
     private MainActivityReceiver mReceiver;
     private boolean hasAudio = false;
     private int playerStatus = Resource.PlayerStatus.STOP;
-
+    private AudioListManager mManager;
 
     @ViewInject(R.id.tab_layout_type)
     private TabLayout mTablayout;
@@ -51,12 +51,13 @@ public class MainActivity extends ELifeBaseActivity implements View.OnClickListe
     @ViewInject(R.id.tv_player_audio_title)
     private TextView mTvAudioTitle;
 
-    public void setPlayingAudio(Audio audio) {
+    public void setPlayingAudio(Audio audio, int position) {
 
         if (audio != null && audio.getAudioUrl() != null) {
             setAudio(audio);
+            mManager.setCurrent(position);
             Intent intent = new Intent(Resource.Filter.PLAYER_SERVICE);
-            intent.putExtra(Resource.Filter.MAIN_ACTIVITY, Resource.Filter.MAIN_ACTIVITY_VALUE);
+            intent.putExtra(Resource.Filter.FILTER_SIGNAL, Resource.Filter.MAIN_ACTIVITY_VALUE);
             intent.putExtra(Resource.ParamsKey.AUDIO_URL, audio.getAudioUrl());
             intent.putExtra(Resource.PlayerStatus.CONTROL_KEY, Resource.PlayerStatus.CONTROL_PLAY_BTN);
             sendBroadcast(intent);
@@ -114,6 +115,8 @@ public class MainActivity extends ELifeBaseActivity implements View.OnClickListe
         mRLPlayer.setOnClickListener(this);
         mIbPlayer.setOnClickListener(this);
         mIvStop.setOnClickListener(this);
+        mManager = ((ELifeApplication)getApplication()).getManager();
+
         mReceiver = new MainActivityReceiver();
         IntentFilter mainFilter = new IntentFilter(Resource.Filter.MAIN_ACTIVITY);
         registerReceiver(mReceiver, mainFilter);
@@ -152,23 +155,21 @@ public class MainActivity extends ELifeBaseActivity implements View.OnClickListe
 
     private void clickToPlayerActivity() {
         if (isHasAudio()) {
-            Intent intent = new Intent(MainActivity.this, NetworkPlayerActivity.class);
+
+            Intent intent = new Intent(MainActivity.this, PlayerActivity.class);
             intent.putExtra(Resource.ParamsKey.AUDIO_TITLE, getAudio().getAudioTitle());
             intent.putExtra(Resource.ParamsKey.AUDIO_STATUS, playerStatus);
+            intent.putExtra(Resource.ParamsKey.AUDIO_INDEX, mManager.getCurrent());
             startActivity(intent);
         }
     }
 
     private void playerStop() {
-//        if (player != null && isHasAudio() && player.isPlaying()) {
-//            player.stop();
-//            setPauseView(getAudio());
-//        }
 
         if(isHasAudio()){
             Intent intent = new Intent(Resource.Filter.PLAYER_SERVICE);
             intent.putExtra(Resource.PlayerStatus.CONTROL_KEY, Resource.PlayerStatus.CONTROL_STOP_BTN);
-            intent.putExtra(Resource.Filter.MAIN_ACTIVITY, Resource.Filter.MAIN_ACTIVITY_VALUE);
+            intent.putExtra(Resource.Filter.FILTER_SIGNAL, Resource.Filter.MAIN_ACTIVITY_VALUE);
             sendBroadcast(intent);
         }
     }
@@ -178,7 +179,7 @@ public class MainActivity extends ELifeBaseActivity implements View.OnClickListe
         if(isHasAudio()){
             Intent intent = new Intent(Resource.Filter.PLAYER_SERVICE);
             intent.putExtra(Resource.PlayerStatus.CONTROL_KEY, Resource.PlayerStatus.CONTROL_PLAY_BTN);
-            intent.putExtra(Resource.Filter.MAIN_ACTIVITY, Resource.Filter.MAIN_ACTIVITY_VALUE);
+            intent.putExtra(Resource.Filter.FILTER_SIGNAL, Resource.Filter.MAIN_ACTIVITY_VALUE);
             sendBroadcast(intent);
         }
     }
@@ -188,6 +189,7 @@ public class MainActivity extends ELifeBaseActivity implements View.OnClickListe
     @Override
     protected void onRestart() {
         super.onRestart();
+        handleBackIntent();
     }
 
     @Override
@@ -211,23 +213,38 @@ public class MainActivity extends ELifeBaseActivity implements View.OnClickListe
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
+
         Intent intent = new Intent(MainActivity.this, AudioPlayerService.class);
         stopService(intent);
+        unregisterReceiver(mReceiver);
+
         Log.i(Resource.Debug.MAIN, "onDestroy");
+        super.onDestroy();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-
         Log.i(Resource.Debug.MAIN, "onStart");
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handleBackIntent();
+    }
+
+    private void handleBackIntent() {
+            setAudio(mManager.getAudioList().get(mManager.getCurrent()));
+            Intent changeAudioIntent = new Intent(Resource.Filter.PLAYER_SERVICE);
+            changeAudioIntent.putExtra(Resource.ParamsKey.AUDIO_URL, getAudio().getAudioUrl());
+            sendBroadcast(changeAudioIntent);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-
         Log.i(Resource.Debug.MAIN, "onPause");
     }
 

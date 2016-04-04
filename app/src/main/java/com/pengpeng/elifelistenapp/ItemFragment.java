@@ -60,13 +60,6 @@ public class ItemFragment extends Fragment implements AudioListIView, SwipeRefre
             mType = getArguments().getInt("type");
         }
 
-//        if(mData == null){
-//            mData = new ArrayList<String>();
-//        }
-//        for(int i=0;i<10;i++){
-//            mData.add("sampleTitle");
-//        }
-
         mPresenter = new AudioListPresenterImpl(this);
         if(mAdapter==null){
             mAdapter = new RecyclerViewAdapter(getActivity().getApplicationContext());
@@ -113,7 +106,7 @@ public class ItemFragment extends Fragment implements AudioListIView, SwipeRefre
 
         @Override
         public void onItemClick(View view, int position) {
-            ((MainActivity)getActivity()).setPlayingAudio(mData.get(position));
+            ((MainActivity)getActivity()).setPlayingAudio(mData.get(position), position);
         }
     };
 
@@ -179,11 +172,12 @@ public class ItemFragment extends Fragment implements AudioListIView, SwipeRefre
         mAdapter.setIsShowFooter(true);
 
         if(mData == null){
-            mData = new ArrayList<Audio>();
+            mData = new ArrayList<>();
         }
 
         Log.i(Resource.Debug.TAG, "before add audio");
         mData.addAll(audioList);
+        ((ELifeApplication)(getActivity().getApplication())).getManager().addAll(audioList);
 
         Log.i(Resource.Debug.TAG, "before new Adapter");
         if(mAdapter==null){

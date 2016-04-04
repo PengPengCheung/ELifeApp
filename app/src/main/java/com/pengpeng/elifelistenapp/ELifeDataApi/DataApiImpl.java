@@ -32,11 +32,8 @@ public class DataApiImpl implements DataApi{
             public void onSuccess(String response) {
                 Type classType = new TypeToken<DataApiResponse<List<Audio>>>() {
                 }.getType();
-                Log.i(TAG, "before deserial");
                 DataApiResponse<List<Audio>> dataApiResponse = JsonUtils.deserialize(response, classType);
-                Log.i(TAG, "after deserial");
                 listener.onSuccess(dataApiResponse.getData());
-                Log.i(TAG, "after onSuccess");
             }
 
             @Override
@@ -46,16 +43,20 @@ public class DataApiImpl implements DataApi{
             }
         };
 
-//        if(audioType == MainActivity.TYPE_NEWS){
             Map<String, Object> params = new HashMap<>();
             params.put(Resource.ParamsKey.USER_ID, userUUID);
-
-            Log.i(TAG, "before post");
+        switch (audioType){
+            case Resource.Type.TYPE_NEWS:
+                params.put(Resource.ParamsKey.AUDIO_TYPE, "news");
+                break;
+            case Resource.Type.TYPE_MOVIE:
+                params.put(Resource.ParamsKey.AUDIO_TYPE, "movie");
+                break;
+            case Resource.Type.TYPE_SPEECH:
+                params.put(Resource.ParamsKey.AUDIO_TYPE, "speech");
+                break;
+        }
             OkHttpUtils.post(Resource.Path.audioListPath, loadAudioListCallback, params);
-            Log.i(TAG, "after post");
-//        }
-
-
     }
 
     /**

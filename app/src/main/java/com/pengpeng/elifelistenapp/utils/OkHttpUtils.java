@@ -59,9 +59,7 @@ public class OkHttpUtils {
     }
 
     private void postRequest(String url, final ResultCallback callback, Map<String, Object> params) {
-        Log.i(TAG, "enter postRequest");
         Request request = buildPostRequest(url, params);
-        Log.i(TAG, "after buildRequest");
         deliveryResult(callback, request);
     }
 
@@ -99,8 +97,6 @@ public class OkHttpUtils {
     }
 
     private void sendSuccessCallBack(final ResultCallback callback, final String obj) {
-
-//        callback.onSuccess(obj);
 
         mDelivery.post(new Runnable() {
             @Override
@@ -149,21 +145,6 @@ public class OkHttpUtils {
      * @param <T>
      */
     public static abstract class ResultCallback<T> {
-
-//        Type mType;
-//
-//        public ResultCallback(){
-//            mType = getSuperclassTypeParameter(getClass());
-//        }
-//
-//        static Type getSuperclassTypeParameter(Class<?> subclass) {
-//            Type superclass = subclass.getGenericSuperclass();
-//            if (superclass instanceof Class) {
-//                throw new RuntimeException("Missing type parameter.");
-//            }
-//            ParameterizedType parameterized = (ParameterizedType) superclass;
-//            return $Gson$Types.canonicalize(parameterized.getActualTypeArguments()[0]);
-//        }
 
         /**
          * 请求成功回调
