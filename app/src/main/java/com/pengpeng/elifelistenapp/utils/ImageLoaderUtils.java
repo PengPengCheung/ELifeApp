@@ -27,6 +27,7 @@ public class ImageLoaderUtils {
         if(imageView == null) {
             throw new IllegalArgumentException("argument error");
         }
+        //如果加载发生错误会重复三次请求，三次都失败才会显示error Place holder
         Glide.with(context).load(url).placeholder(R.drawable.ic_image_loading)
                 .error(R.drawable.ic_image_loadfail).crossFade().into(imageView);
     }

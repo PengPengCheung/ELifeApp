@@ -7,14 +7,14 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
     <application
-        android:name=".ELifeApplication"
+        android:name=".common.ELifeApplication"
         android:allowBackup="true"
         android:icon="@drawable/app_icon"
         android:label="大耳朵听力"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.StartActivity"
             android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -22,18 +22,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".NetworkPlayerActivity" />
+        <activity android:name=".ui.MainActivity" />
         <activity
-            android:name=".ExerciseActivity"
+            android:name=".ui.ExerciseActivity"
             android:windowSoftInputMode="adjustResize|adjustPan" />
-        <activity android:name=".ELifeBaseActivity" />
+        <activity android:name=".common.ELifeBaseActivity" />
 
         <service
-            android:name=".AudioPlayerService"
+            android:name=".common.AudioPlayerService"
             android:enabled="true"
             android:exported="true" />
 
-        <activity android:name=".PlayerActivity"></activity>
+        <activity android:name=".ui.PlayerActivity"></activity>
     </application>
 
 </manifest>

@@ -60,27 +60,30 @@ public class OkHttpUtils {
 
     private void postRequest(String url, final ResultCallback callback, Map<String, Object> params) {
         Request request = buildPostRequest(url, params);
+       // Log.i("---------->request",request.toString());
         deliveryResult(callback, request);
+//        Log.i("----------Requesturl2",url);
+//        Log.i("----------RequestCall2",callback.toString());
+//        Log.i("----------Requestparam2",params.toString());
     }
 
     private void deliveryResult(final ResultCallback callback, Request request) {
-
         mOkHttpClient.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Request request, final IOException e) {
                 sendFailCallback(callback, e);
             }
-
             @Override
             public void onResponse(Response response) throws IOException {
                 try {
                     String str = response.body().string();
+                    //Log.i("-------------respesuc",str);
                     sendSuccessCallBack(callback, str);
                 } catch (final Exception e) {
                     Log.e(TAG, "convert json failure", e);
                     sendFailCallback(callback, e);
+                    //Log.i("-----------respfail",e.toString());
                 }
-
             }
         });
     }
@@ -103,6 +106,7 @@ public class OkHttpUtils {
             public void run() {
                 if (callback != null) {
                     callback.onSuccess(obj);
+                   // Log.i("------------obj",obj);
                 }
             }
         });
@@ -110,8 +114,10 @@ public class OkHttpUtils {
 
     private Request buildPostRequest(String url, Map<String, Object> params) {
         String jsonData = JsonUtils.serialize(params);
+       // Log.i("----------->jsondata",jsonData);
         final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
         RequestBody body = RequestBody.create(JSON, jsonData);
+       // Log.i("----------->body",body.toString());
         return new Request.Builder().url(url).post(body).build();
     }
 
@@ -137,6 +143,7 @@ public class OkHttpUtils {
      */
     public static void post(String url, final ResultCallback callback, Map<String, Object> params) {
         getmInstance().postRequest(url, callback, params);
+
     }
 
     /**

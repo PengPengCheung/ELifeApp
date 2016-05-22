@@ -4,7 +4,39 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <include layout="@layout/layout_titlebar"/>
+    <RelativeLayout
+        android:id="@+id/ll_title_bar"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_alignParentTop="true"
+        android:background="#3e3938" >
+
+        <ImageView
+            android:id="@+id/iv_back_exe"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="10dp"
+            android:src="@drawable/back" />
+
+        <TextView
+            android:id="@+id/tv_listen_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="听力"
+            android:textColor="#ffffff"
+            android:textSize="31sp" />
+
+        <ImageView
+            android:id="@+id/iv_voice_exe"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="10dp"
+            android:src="@drawable/voice" />
+    </RelativeLayout>
 
     <TextView
         android:id="@+id/tv_gap"
@@ -22,6 +54,7 @@
 
 
     <LinearLayout
+        android:id="@+id/ll_exercise_submit"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@+id/abl"
@@ -29,6 +62,7 @@
         android:orientation="vertical">
 
         <TextView
+            android:id="@+id/tv_answer_head"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="完成练习后提交检测正确率"
@@ -39,6 +73,7 @@
             android:textColor="@color/color_exercise_tips"/>
 
         <Button
+            android:id="@+id/btn_submit"
             android:text="提      交"
             android:textSize="20sp"
             android:textColor="@color/colorTabTv"
@@ -48,7 +83,36 @@
             android:layout_marginRight="30dp"
             android:layout_marginBottom="10dp"
             android:background="@drawable/shape"/>
+        <ScrollView
+            android:id="@+id/scrollView_answer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+           >
+            <FrameLayout
+                android:id="@+id/framelayout"
+                android:layout_width="fill_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone">
 
+            <LinearLayout
+                android:id="@+id/linearLayout_gridtableLayout"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:orientation="vertical"
+                android:visibility="gone">
+            <GridView
+            android:id="@+id/gv_answer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:numColumns="2"
+            android:scrollbars="vertical"
+            android:scrollbarAlwaysDrawVerticalTrack="true"
+            android:visibility="gone">
+        </GridView>
+            </LinearLayout>
+            </FrameLayout>
+        </ScrollView>
     </LinearLayout>
 
     <android.support.design.widget.AppBarLayout
