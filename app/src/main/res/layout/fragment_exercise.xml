@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.pengpeng.elifelistenapp.ExerciseFragment">
+    tools:context=".ui.ExerciseFragment">
 
     <!-- TODO: Update blank fragment layout -->
     <!--<TextView-->
@@ -14,13 +14,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <com.pengpeng.elifelistenapp.WordWrapView
+        <com.pengpeng.elifelistenapp.widget.WordWrapView
             android:id="@+id/wwv_exercise_text"
             android:layout_gravity="center_horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-        </com.pengpeng.elifelistenapp.WordWrapView>
+        </com.pengpeng.elifelistenapp.widget.WordWrapView>
 
     </ScrollView>
 

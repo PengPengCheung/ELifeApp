@@ -10,6 +10,7 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.widget.SeekBar;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -42,6 +43,33 @@ public class Tools {
             }
         }
         return false;
+    }
+
+    public static int[] listToIntArray(List<Integer> list){
+        if(list != null){
+            int[] intArray = new int[list.size()];
+            for(int i = 0; i<list.size(); i++){
+                intArray[i] = list.get(i);
+            }
+            return intArray;
+        }
+        return null;
+    }
+
+    public static String getType(int pageIndex){
+        String type = null;
+        switch(pageIndex){
+            case Resource.Type.TYPE_MOVIE:
+                type = Resource.Type.STR_TYPE_MOVIE;
+                break;
+            case Resource.Type.TYPE_SPEECH:
+                type = Resource.Type.STR_TYPE_SPEECH;
+                break;
+            case Resource.Type.TYPE_NEWS:
+                type = Resource.Type.STR_TYPE_NEWS;
+                break;
+        }
+        return type;
     }
 
     /**

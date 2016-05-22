@@ -18,7 +18,7 @@ public class JsonUtils {
     private static Gson mGson = new Gson();
 
     /**
-     * 将对象准换为json字符串
+     * 将对象转换为json字符串
      * @param object
      * @return
      */
@@ -59,6 +59,8 @@ public class JsonUtils {
     public static <T> T deserialize(String json, Type type) throws JsonSyntaxException {
         return mGson.fromJson(json, type);
     }
+
+
 
 
 

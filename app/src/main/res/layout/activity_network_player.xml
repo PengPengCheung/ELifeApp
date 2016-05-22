@@ -64,7 +64,7 @@
     <RelativeLayout
         android:id="@+id/rl_detail"
         android:layout_width="match_parent"
-        android:layout_height="90dp"
+        android:layout_height="100dp"
         android:gravity="center"
         android:layout_above="@+id/rl_seekbar"
         android:background="#e1e0e0" >
@@ -77,18 +77,9 @@
             android:padding="0dp"
             android:text="Around the world"
             android:textColor="#565656"
-            android:textSize="25sp" />
+            android:textAlignment="center"
+            android:textSize="23sp" />
 
-        <TextView
-            android:id="@+id/tv_detail"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/tv_audio_title"
-            android:layout_centerInParent="true"
-            android:padding="0dp"
-            android:text="Daft punk"
-            android:textColor="#565656"
-            android:textSize="18.5sp" />
     </RelativeLayout>
 
     <RelativeLayout
