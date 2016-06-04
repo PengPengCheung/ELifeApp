@@ -22,8 +22,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ui.MainActivity" />
         <activity
+            android:name=".ui.MainActivity"
+            android:launchMode="singleTask"
+            />
+        <activity
+            android:launchMode="singleTask"
             android:name=".ui.ExerciseActivity"
             android:windowSoftInputMode="adjustResize|adjustPan" />
         <activity android:name=".common.ELifeBaseActivity" />
@@ -33,7 +37,8 @@
             android:enabled="true"
             android:exported="true" />
 
-        <activity android:name=".ui.PlayerActivity"></activity>
+        <activity android:name=".ui.PlayerActivity"
+            android:launchMode="singleTask" />
     </application>
 
 </manifest>

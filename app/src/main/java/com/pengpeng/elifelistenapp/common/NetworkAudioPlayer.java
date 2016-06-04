@@ -4,6 +4,7 @@ import android.content.Context;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 
+import com.pengpeng.elifelistenapp.utils.Resource;
 import com.pengpeng.elifelistenapp.utils.Tools;
 
 import java.io.IOException;
@@ -11,10 +12,12 @@ import java.io.IOException;
 /**
  * Created by pengpeng on 16-3-28.
  */
-public class NetworkAudioPlayer extends MediaPlayer implements IAudioPlayer {
+public class NetworkAudioPlayer extends MediaPlayer implements IAudioPlayer, MediaPlayer.OnPreparedListener {
 
     private Context context;
     private boolean paused = false;
+
+    private int status = Resource.PlayerStatus.STOP;
 
     public boolean isPrepared() {
         return prepared;
@@ -35,6 +38,7 @@ public class NetworkAudioPlayer extends MediaPlayer implements IAudioPlayer {
 
     private NetworkAudioPlayer(Context context){
         this.context = context;
+//        player.setOnPreparedListener(this);
     }
 
     public static NetworkAudioPlayer getInstance(Context context){
@@ -121,5 +125,9 @@ public class NetworkAudioPlayer extends MediaPlayer implements IAudioPlayer {
        player = null;
    }
 
+    @Override
+    public void onPrepared(MediaPlayer mp) {
+
+    }
 }
 

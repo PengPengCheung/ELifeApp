@@ -56,6 +56,7 @@ public class Resource {
     }
 
     public static final class ParamsKey{
+        public static final String AUDIO_SP_KEY = "audio";
         public static final String AUDIO_ID = "audioId";
         public static final String USER_ID = "userId";
         public static final String AUDIO_TITLE = "audioTitle";
@@ -69,6 +70,7 @@ public class Resource {
         public static final String SEEKBAR_MAX = "SeekBarMax";
         public static final String AUDIO_TEXT="audioText";
         public static final String AUDIO_PARTENDTIME="audioPartEndTime";
+        public static final String AUDIO_IMAGE_URL = "audioImageUrl";
         public static final String USERANSWER = "userAnswer";
 
     }

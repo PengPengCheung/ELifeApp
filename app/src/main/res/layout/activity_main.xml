@@ -41,7 +41,7 @@
             android:layout_centerInParent="true"
             android:layout_alignParentLeft="true"
             android:layout_marginLeft="16dp"
-            android:src="@drawable/play2"/>
+            android:src="@drawable/app_icon"/>
 
         <TextView
             android:id="@+id/tv_player_audio_title"
@@ -49,8 +49,11 @@
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:layout_toRightOf="@+id/iv_audio_img_icon"
+            android:layout_toLeftOf="@+id/ib_main_play"
             android:layout_marginLeft="12dp"
-            android:text="sample"/>
+            android:ellipsize="middle"
+            android:singleLine="true"
+            android:text="大耳朵听力"/>
 
         <ImageView
             android:id="@+id/ib_main_play"
