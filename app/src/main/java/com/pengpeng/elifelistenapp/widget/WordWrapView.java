@@ -21,7 +21,7 @@ public class WordWrapView extends ViewGroup {
     private static final int TEXT_MARGIN = 5;
 
     private Context mContext;
-    private EditText editText;
+//    private EditText editText;
 
     public WordWrapView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -107,7 +107,7 @@ public class WordWrapView extends ViewGroup {
     public void initExercise(List<String> strlist, List<Integer> blanks, WordWrapView parentView) {
         int b = 0;
         for (int i = 0; i < strlist.size(); i=i+1) {
-            editText = new LineEditText(mContext);
+            EditText editText = new LineEditText(mContext);
             int width = 0;
             if (b < blanks.size() && blanks.get(b) == i) {
 

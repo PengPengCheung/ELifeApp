@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
@@ -20,17 +21,20 @@ import com.pengpeng.elifelistenapp.model.Audio;
 import com.pengpeng.elifelistenapp.R;
 import com.pengpeng.elifelistenapp.adapter.ViewPagerAdapter;
 import com.pengpeng.elifelistenapp.utils.ImageLoaderUtils;
+import com.pengpeng.elifelistenapp.utils.LogUtil;
 import com.pengpeng.elifelistenapp.utils.Resource;
 import com.pengpeng.elifelistenapp.utils.Tools;
 
 import org.xutils.view.annotation.ContentView;
 import org.xutils.view.annotation.ViewInject;
+
 //加载当前ACTIVITY布局
 @ContentView(R.layout.activity_main)
 public class MainActivity extends ELifeBaseActivity implements View.OnClickListener {
     private MainActivityReceiver mReceiver;
     private boolean hasAudio = false;
     private int playerStatus = Resource.PlayerStatus.STOP;
+    private String TAG = "MainActivity";
     //给View进行初始化
     @ViewInject(R.id.tab_layout_type)
     private TabLayout mTablayout;
@@ -56,16 +60,18 @@ public class MainActivity extends ELifeBaseActivity implements View.OnClickListe
     public void setPlayingAudio(Audio audio, int position) {
 
         if (audio != null && audio.getAudioUrl() != null) {
-            setAudio(audio);
+//            setAudio(audio);
             AudioListManager.getInstance().setCurrentType(Tools.getType(mViewPager.getCurrentItem()));
             AudioListManager.getInstance().setCurrentIndex(position);
+            AudioListManager.getInstance().setCurrentAudio(audio);
             Intent intent = new Intent(Resource.Filter.PLAYER_SERVICE);
             intent.putExtra(Resource.Filter.FILTER_SIGNAL, Resource.Filter.MAIN_ACTIVITY_VALUE);
             intent.putExtra(Resource.ParamsKey.AUDIO_URL, audio.getAudioUrl());
             intent.putExtra(Resource.PlayerStatus.CONTROL_KEY, Resource.PlayerStatus.CONTROL_PLAY_BTN);
             sendBroadcast(intent);
+            setPlayingView(audio);
             hasAudio = true;
-            Log.i(Resource.Debug.TAG, "MainActivity SetAudio "+hasAudio);
+            Log.i(Resource.Debug.TAG, "MainActivity SetAudio " + hasAudio);
         }
     }
 
@@ -113,12 +119,27 @@ public class MainActivity extends ELifeBaseActivity implements View.OnClickListe
 
     }
 
+    private boolean checkHasSavedAudio() {
+        SharedPreferences sp = getSharedPreferences(Resource.ParamsKey.AUDIO_SP_KEY, MODE_PRIVATE);
+        if (sp != null) {
+            String title = sp.getString(Resource.ParamsKey.AUDIO_TITLE, "");
+            String imageUrl = sp.getString(Resource.ParamsKey.AUDIO_IMAGE_URL, "");
+            String audioUrl = sp.getString(Resource.ParamsKey.AUDIO_URL, "");
+            String audioType = sp.getString(Resource.ParamsKey.AUDIO_TYPE, "");
+            LogUtil.e(TAG, title + ", " + imageUrl + ", " + audioUrl + ", " + audioType);
+            if (!audioUrl.isEmpty() && !title.isEmpty() && !audioType.isEmpty()) {
+                return true;
+            }
+        }
+        return false;
+    }
 
 
     private void init() {
         mRLPlayer.setOnClickListener(this);
         mIbPlayer.setOnClickListener(this);
         mIvStop.setOnClickListener(this);
+
         //动态注册了广播
         mReceiver = new MainActivityReceiver();
         IntentFilter mainFilter = new IntentFilter(Resource.Filter.MAIN_ACTIVITY);
@@ -126,6 +147,10 @@ public class MainActivity extends ELifeBaseActivity implements View.OnClickListe
 
         Intent intent = new Intent(this, AudioPlayerService.class);
         startService(intent);
+        if (checkHasSavedAudio()) {
+            setPauseView(AudioListManager.getInstance().getCurrentAudio());
+            hasAudio = true;
+        }
     }
 
     private void setupViewPager(ViewPager mViewPager) {
@@ -160,7 +185,7 @@ public class MainActivity extends ELifeBaseActivity implements View.OnClickListe
         if (isHasAudio()) {
 
             Intent intent = new Intent(MainActivity.this, PlayerActivity.class);
-            intent.putExtra(Resource.ParamsKey.AUDIO_TITLE, getAudio().getAudioTitle());
+            intent.putExtra(Resource.ParamsKey.AUDIO_TITLE, AudioListManager.getInstance().getCurrentAudio().getAudioTitle());
             intent.putExtra(Resource.ParamsKey.AUDIO_STATUS, playerStatus);
             intent.putExtra(Resource.ParamsKey.AUDIO_INDEX, AudioListManager.getInstance().getCurrentIndex());
             startActivity(intent);
@@ -169,7 +194,7 @@ public class MainActivity extends ELifeBaseActivity implements View.OnClickListe
 
     private void playerStop() {
 
-        if(isHasAudio()){
+        if (isHasAudio()) {
             Intent intent = new Intent(Resource.Filter.PLAYER_SERVICE);
             intent.putExtra(Resource.PlayerStatus.CONTROL_KEY, Resource.PlayerStatus.CONTROL_STOP_BTN);
             intent.putExtra(Resource.Filter.FILTER_SIGNAL, Resource.Filter.MAIN_ACTIVITY_VALUE);
@@ -180,9 +205,11 @@ public class MainActivity extends ELifeBaseActivity implements View.OnClickListe
 
 
     private void playOrPause() {
-        if(isHasAudio()){
+        if (isHasAudio()) {
             Intent intent = new Intent(Resource.Filter.PLAYER_SERVICE);
             intent.putExtra(Resource.PlayerStatus.CONTROL_KEY, Resource.PlayerStatus.CONTROL_PLAY_BTN);
+//            intent.putExtra(Resource.ParamsKey.AUDIO_URL, AudioListManager.getInstance().getCurrentAudio().getAudioUrl());
+//            LogUtil.e(TAG, "ppp url is " + AudioListManager.getInstance().getCurrentAudio().getAudioUrl());
             intent.putExtra(Resource.Filter.FILTER_SIGNAL, Resource.Filter.MAIN_ACTIVITY_VALUE);
             sendBroadcast(intent);
         }
@@ -208,9 +235,9 @@ public class MainActivity extends ELifeBaseActivity implements View.OnClickListe
 
         Log.i(Resource.Debug.MAIN, "onResume");
 
-        if (getAudio() != null) {
-            mTvAudioTitle.setText(getAudio().getAudioTitle());
-            ImageLoaderUtils.display(this, mIvAudio, getAudio().getAudioImageUrl());
+        if (AudioListManager.getInstance().getCurrentAudio() != null) {
+            mTvAudioTitle.setText(AudioListManager.getInstance().getCurrentAudio().getAudioTitle());
+            ImageLoaderUtils.display(this, mIvAudio, AudioListManager.getInstance().getCurrentAudio().getAudioImageUrl());
         }
 
     }
@@ -222,7 +249,7 @@ public class MainActivity extends ELifeBaseActivity implements View.OnClickListe
         stopService(intent);
         //销毁广播
         unregisterReceiver(mReceiver);
-
+        AudioListManager.getInstance().destroy();
         Log.i(Resource.Debug.MAIN, "onDestroy");
         super.onDestroy();
     }
@@ -241,18 +268,31 @@ public class MainActivity extends ELifeBaseActivity implements View.OnClickListe
     }
 
     private void handleBackIntent() {
-            setAudio(AudioListManager.getInstance().getCurrentAudio());
-            Intent changeAudioIntent = new Intent(Resource.Filter.PLAYER_SERVICE);
-            changeAudioIntent.putExtra(Resource.ParamsKey.AUDIO_URL, getAudio().getAudioUrl());
-            sendBroadcast(changeAudioIntent);
+//            setAudio(AudioListManager.getInstance().getCurrentAudio());
+        Intent changeAudioIntent = new Intent(Resource.Filter.PLAYER_SERVICE);
+        changeAudioIntent.putExtra(Resource.ParamsKey.AUDIO_URL, AudioListManager.getInstance().getCurrentAudio().getAudioUrl());
+        sendBroadcast(changeAudioIntent);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        SharedPreferences sp = getSharedPreferences(Resource.ParamsKey.AUDIO_SP_KEY, MODE_PRIVATE);
+        SharedPreferences.Editor editor = sp.edit();
+//        editor.clear();
+        editor.putString(Resource.ParamsKey.AUDIO_TITLE, AudioListManager.getInstance().getCurrentAudio().getAudioTitle());
+        editor.putString(Resource.ParamsKey.AUDIO_IMAGE_URL, AudioListManager.getInstance().getCurrentAudio().getAudioImageUrl());
+        editor.putString(Resource.ParamsKey.AUDIO_URL, AudioListManager.getInstance().getCurrentAudio().getAudioUrl());
+        editor.putString(Resource.ParamsKey.AUDIO_TYPE, AudioListManager.getInstance().getCurrentType());
+        LogUtil.e(TAG, "AudioPartEndTime is " + AudioListManager.getInstance().getCurrentAudio().getAudioPartEndTime());
+        editor.putInt(Resource.ParamsKey.AUDIO_PARTENDTIME, AudioListManager.getInstance().getCurrentAudio().getAudioPartEndTime().get(2));
+        editor.putString(Resource.ParamsKey.AUDIO_ID, AudioListManager.getInstance().getCurrentAudio().getAudioId());
+        LogUtil.e(TAG, "ppp type " + AudioListManager.getInstance().getCurrentType());
+        editor.commit();
         Log.i(Resource.Debug.MAIN, "onPause");
     }
-//广播接收者
+
+    //广播接收者
     public class MainActivityReceiver extends BroadcastReceiver {
 
         /**
@@ -261,22 +301,25 @@ public class MainActivity extends ELifeBaseActivity implements View.OnClickListe
          */
         @Override
         public void onReceive(Context context, Intent intent) {
-            if(intent != null){
+            if (intent != null) {
                 Log.i(Resource.Debug.TAG, "Activity receive");
-               // 获得广播
+                // 获得广播
                 int status = intent.getIntExtra(Resource.PlayerStatus.UPDATE_KEY, -1);
-                switch (status){
+                switch (status) {
                     case Resource.PlayerStatus.PLAYING:
-                        setPlayingView(getAudio());
+                        setPlayingView(AudioListManager.getInstance().getCurrentAudio());
                         playerStatus = Resource.PlayerStatus.PLAYING;
+                        LogUtil.e(TAG, "ppp PLAYING PlayerStatus is " + playerStatus);
                         break;
                     case Resource.PlayerStatus.PAUSE:
-                        setPauseView(getAudio());
+                        setPauseView(AudioListManager.getInstance().getCurrentAudio());
                         playerStatus = Resource.PlayerStatus.PAUSE;
+                        LogUtil.e(TAG, "ppp PAUSE PlayerStatus is " + playerStatus);
                         break;
                     case Resource.PlayerStatus.STOP:
-                        setPauseView(getAudio());
+                        setPauseView(AudioListManager.getInstance().getCurrentAudio());
                         playerStatus = Resource.PlayerStatus.STOP;
+                        LogUtil.e(TAG, "ppp STOP PlayerStatus is " + playerStatus);
                         break;
                 }
             }

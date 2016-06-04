@@ -10,14 +10,15 @@ public class Audio {
     private String audioTitle;      //音频标题
     private String audioType;       //音频类别，分为film, news, lecture, speech
     private String audioLrcUrl;     //音频lrc文件url，来自服务器而不是网络
-    private List<List<Integer>> audioTextBlankIndex;  //对音频文本的挖空位置下标列表
     private String audioImageUrl;   //音频图片资源url，来自服务器而不是网络
     private String audioDate;       //音频发布日期
     private String audioUrl;        //音频资源url，来自服务器而不是网络
-    private List<String> audioText;       //音频文本
-    private List<Integer> audioPartEndTime;        //音频各部分的开始时间，其列表的下表即音频的分段编号，列表长度即切割成的段数，暂时的段数设为3段
     private float avgCorrectRate;   //该段音频的平均准确率
+
+    private List<String> audioText;       //音频文本，仅仅返回三段，每段为材料均分后的节选部分，而不是全部内容。
+    private List<Integer> audioPartEndTime;        //音频各部分的开始时间，其列表的下表即音频的分段编号，列表长度即切割成的段数，暂时的段数设为3段
     private List<List<String>> audioTextBlankWord;
+    private List<List<Integer>> audioTextBlankIndex;  //对音频文本的挖空位置下标列表
 
     public List<List<Integer>> getAudioTextBlankIndex() {
         return audioTextBlankIndex;
@@ -95,7 +96,6 @@ public class Audio {
     public void setAudioType(String audioType) {
         this.audioType = audioType;
     }
-
 
 
     public String getAudioLrcUrl() {

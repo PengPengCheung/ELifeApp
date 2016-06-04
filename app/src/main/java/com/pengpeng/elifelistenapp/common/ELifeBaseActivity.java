@@ -12,7 +12,7 @@ import org.xutils.x;
 public class ELifeBaseActivity extends AppCompatActivity {
 
 
-    private Audio mAudio;
+//    private Audio mAudio;
 
 
     @Override
@@ -24,20 +24,20 @@ public class ELifeBaseActivity extends AppCompatActivity {
         x.app();
 
         Log.i(Resource.Debug.TAG, "init");
-        init();
+//        init();
     }
 
-    private void init() {
-
-    }
-
-    public Audio getAudio() {
-        return this.mAudio;
-    }
-
-    public void setAudio(Audio audio){
-        this.mAudio = audio;
-    }
+//    private void init() {
+//
+//    }
+//
+//    public Audio getAudio() {
+//        return this.mAudio;
+//    }
+//
+//    public void setAudio(Audio audio){
+//        this.mAudio = audio;
+//    }
 
 
 

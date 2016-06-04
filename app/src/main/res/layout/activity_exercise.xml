@@ -9,7 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:layout_alignParentTop="true"
-        android:background="#3e3938" >
+        android:background="#3e3938">
 
         <ImageView
             android:id="@+id/iv_back_exe"
@@ -40,17 +40,17 @@
 
     <TextView
         android:id="@+id/tv_gap"
-        android:layout_below="@+id/ll_title_bar"
-        android:background="@color/color_exercise_div"
         android:layout_width="match_parent"
-        android:layout_height="6dp" />
+        android:layout_height="6dp"
+        android:layout_below="@+id/ll_title_bar"
+        android:background="@color/color_exercise_div" />
 
     <android.support.v4.view.ViewPager
         android:id="@+id/viewpager_exercise"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/tv_gap"
-        android:layout_above="@+id/rl_player"/>
+        android:layout_above="@+id/ll_exercise_submit"
+        android:layout_below="@id/tv_gap" />
 
 
     <LinearLayout
@@ -65,52 +65,54 @@
             android:id="@+id/tv_answer_head"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="完成练习后提交检测正确率"
             android:layout_gravity="center"
-            android:textSize="15sp"
-            android:layout_marginTop="10dp"
             android:layout_marginBottom="10dp"
-            android:textColor="@color/color_exercise_tips"/>
+            android:layout_marginTop="10dp"
+            android:text="完成练习后提交检测正确率"
+            android:textColor="@color/color_exercise_tips"
+            android:textSize="15sp" />
 
         <Button
             android:id="@+id/btn_submit"
-            android:text="提      交"
-            android:textSize="20sp"
-            android:textColor="@color/colorTabTv"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
             android:layout_marginLeft="30dp"
             android:layout_marginRight="30dp"
-            android:layout_marginBottom="10dp"
-            android:background="@drawable/shape"/>
+            android:background="@drawable/shape"
+            android:text="提      交"
+            android:textColor="@color/colorTabTv"
+            android:textSize="20sp" />
+
         <ScrollView
             android:id="@+id/scrollView_answer"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-           >
+            android:layout_height="match_parent">
+
             <FrameLayout
                 android:id="@+id/framelayout"
                 android:layout_width="fill_parent"
                 android:layout_height="match_parent"
                 android:visibility="gone">
 
-            <LinearLayout
-                android:id="@+id/linearLayout_gridtableLayout"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:orientation="vertical"
-                android:visibility="gone">
-            <GridView
-            android:id="@+id/gv_answer"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:numColumns="2"
-            android:scrollbars="vertical"
-            android:scrollbarAlwaysDrawVerticalTrack="true"
-            android:visibility="gone">
-        </GridView>
-            </LinearLayout>
+                <LinearLayout
+                    android:id="@+id/linearLayout_gridtableLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <GridView
+                        android:id="@+id/gv_answer"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:clickable="false"
+                        android:gravity="center"
+                        android:numColumns="2"
+                        android:scrollbarAlwaysDrawVerticalTrack="true"
+                        android:scrollbars="vertical"
+                        android:visibility="gone" />
+                </LinearLayout>
             </FrameLayout>
         </ScrollView>
     </LinearLayout>
@@ -122,12 +124,13 @@
         android:layout_alignParentBottom="true"
         android:background="@color/colorExerciseTab"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+
         <android.support.design.widget.TabLayout
             android:id="@+id/tab_layout_part"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:tabIndicatorColor="@color/color_exercise_div"
-            app:tabIndicatorHeight="6dp"/>
+            app:tabIndicatorHeight="6dp" />
     </android.support.design.widget.AppBarLayout>
 
 </RelativeLayout>

@@ -37,7 +37,9 @@ import org.xutils.view.annotation.ContentView;
 import org.xutils.view.annotation.ViewInject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @ContentView(R.layout.activity_exercise)
 public class ExerciseActivity extends ELifeBaseActivity implements View.OnClickListener, AudioAnswerView {
@@ -56,7 +58,7 @@ public class ExerciseActivity extends ELifeBaseActivity implements View.OnClickL
     private ViewPager mVPExercise;
     //提交
     @ViewInject(R.id.btn_submit)
-    private Button submit_btn;
+    private Button mBtnSubmit;
 
     @ViewInject(R.id.tv_answer_head)
     private TextView mTvAnswer;
@@ -65,69 +67,54 @@ public class ExerciseActivity extends ELifeBaseActivity implements View.OnClickL
     private GridView mGvAnswer;
 
     @ViewInject(R.id.linearLayout_gridtableLayout)
-    private LinearLayout ll_gridetableLayout;
+    private LinearLayout mLLAnswerWrapper;
 
     @ViewInject(R.id.framelayout)
     private FrameLayout frameLayout;
 
     public String answer[];
-    private Audio mAudio;
-//    private AudioListManager mManager;
+//    private Audio mAudio;
     private int index;
     private IntentFilter mExerciseFilter;
     private ExerciseActivityReceiver mExerciseReceive;
     private AudioListPresenter mPresenter;
     private ViewPagerAdapter adapter;
-    private List<LineEditText> editTextData = new ArrayList<LineEditText>();
-    private LineEditText lineEditText;
     private AudioAnswerPresenter mAudioAnswerPresenter;
-    private List<String> userAnswer = new ArrayList<String>();
-    private List<String> standardAnswer0 = new ArrayList<String>();
-    private List<String> standardAnswer1 = new ArrayList<String>();
-    private List<String> standardAnswer2 = new ArrayList<String>();
+    private MyAdapter mGVAdapter;
 
-    private boolean answerflag0 = false, answerflag1 = false, answerflag2 = false;
-    private LayoutInflater inflater;
     //    private String grid_answer_id[]={"(1)","(2)","(3)","(4)","(5)","(6)","(7)","(8)","(9)","(10)","(11)","(12)"};
 //   private String grid_answer_detail[]={"aaa","bbb","ccc","ddd","eee","fff","aaa","bbb","ccc","ddd","eee","fff"};
-    private String grid_answer_id0[] = new String[50];
-    private String grid_answer_detail0[] = new String[50];
-    private String grid_answer_id1[] = new String[50];
-    private String grid_answer_detail1[] = new String[50];
-    private String grid_answer_id2[] = new String[50];
-    private String grid_answer_detail2[] = new String[50];
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        init();
         Intent intent = getIntent();
         index = intent.getIntExtra(Resource.ParamsKey.AUDIO_TEXT, -1);
 
 
-        mVPExercise.setOffscreenPageLimit(2);
+//        mVPExercise.setOffscreenPageLimit(2);
         setupViewPager(mVPExercise);
         mTLPart.addTab(mTLPart.newTab().setText(R.string.part_one));
         mTLPart.addTab(mTLPart.newTab().setText(R.string.part_two));
         mTLPart.addTab(mTLPart.newTab().setText(R.string.part_three));
 
         mTLPart.setupWithViewPager(mVPExercise);
-        inflater = LayoutInflater.from(this);
-        mGvAnswer.setAdapter(new MyAdapter());
+
+
     }
 
     private void init() {
-        submit_btn.setOnClickListener(this);
+        mBtnSubmit.setOnClickListener(this);
         mIVBack.setOnClickListener(this);
         mIVVoice.setOnClickListener(this);
-
-//        mManager = ((ELifeApplication) getApplication()).getManager();
-        mAudio = AudioListManager.getInstance().getCurrentAudio();
+//        AudioListManager.getInstance().getCurrentAudio() = AudioListManager.getInstance().getCurrentAudio();
         ViewPager mViewPager = new ViewPager(this);
 
 
         mAudioAnswerPresenter = new AudioAnswerPresenterImpl(ExerciseActivity.this);
 //        mAudioAnswerPresenter.loadAudioAnswer(mAudio.getAudioId(),mViewPager.getCurrentItem(),"123",userAnswer);
-        mAudioAnswerPresenter.loadAudioAnswer(mAudio.getAudioId(), mViewPager.getCurrentItem(), "123");
+        mAudioAnswerPresenter.loadAudioAnswer(AudioListManager.getInstance().getCurrentAudio().getAudioId(), mViewPager.getCurrentItem(), "123");
 
         //处理和文本part相关的操作---SERVICE
         mExerciseReceive = new ExerciseActivityReceiver();
@@ -152,20 +139,11 @@ public class ExerciseActivity extends ELifeBaseActivity implements View.OnClickL
 
             @Override
             public void onPageSelected(int position) {
-                if (mViewPager.getCurrentItem() == 0) {
-                    hideAnswer();
-                    answerflag0 = true;
-                    mGvAnswer.setAdapter(new MyAdapter());
-                } else if (mViewPager.getCurrentItem() == 1) {
-                    hideAnswer();
-                    answerflag1 = true;
-                    mGvAnswer.setAdapter(new MyAdapter());
-                } else {
-                    hideAnswer();
-                    answerflag2 = true;
-                    mGvAnswer.setAdapter(new MyAdapter());
+                ((ExerciseFragment) adapter.getItem(position)).fillExercise();
+                hideAnswer();
+                if (mGVAdapter != null) {
+                    mGVAdapter.setPart(position);
                 }
-
             }
 
             @Override
@@ -179,10 +157,10 @@ public class ExerciseActivity extends ELifeBaseActivity implements View.OnClickL
     private void showAnswer() {
         mTvAnswer.setText("ANSWER:");
         mTvAnswer.setTextColor(Color.WHITE);
-        submit_btn.setVisibility(View.GONE);
+        mBtnSubmit.setVisibility(View.GONE);
         frameLayout.setVisibility(View.VISIBLE);
-        ll_gridetableLayout.setVisibility(View.VISIBLE);
-        ll_gridetableLayout.setLayoutParams(new FrameLayout.LayoutParams(//动态设置宽度
+        mLLAnswerWrapper.setVisibility(View.VISIBLE);
+        mLLAnswerWrapper.setLayoutParams(new FrameLayout.LayoutParams(//动态设置宽度
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 150));
         mGvAnswer.setVisibility(View.VISIBLE);
@@ -191,9 +169,9 @@ public class ExerciseActivity extends ELifeBaseActivity implements View.OnClickL
     private void hideAnswer() {
         mTvAnswer.setText("完成练习后提交检测正确率");
         mTvAnswer.setTextColor(Color.GRAY);
-        submit_btn.setVisibility(View.VISIBLE);
+        mBtnSubmit.setVisibility(View.VISIBLE);
         frameLayout.setVisibility(View.GONE);
-        ll_gridetableLayout.setVisibility(View.GONE);
+        mLLAnswerWrapper.setVisibility(View.GONE);
         mGvAnswer.setVisibility(View.GONE);
     }
 
@@ -202,18 +180,9 @@ public class ExerciseActivity extends ELifeBaseActivity implements View.OnClickL
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btn_submit:
-                answerflag0 = true;
-                if (answerflag0 == true) {
-                    showAnswer();
-                    mGvAnswer.setAdapter(new MyAdapter());
-                }
-                if (answerflag1 == true) {
-                    showAnswer();
-                    mGvAnswer.setAdapter(new MyAdapter());
-                }
-                if (answerflag2 == true) {
-                    showAnswer();
-                    mGvAnswer.setAdapter(new MyAdapter());
+                showAnswer();
+                if (mGVAdapter != null) {
+                    mGVAdapter.setPart(mVPExercise.getCurrentItem());
                 }
                 break;
             case R.id.iv_back_exe:
@@ -225,11 +194,11 @@ public class ExerciseActivity extends ELifeBaseActivity implements View.OnClickL
                 Intent intent = new Intent(Resource.Filter.PLAYER_SERVICE);
                 intent.putExtra(Resource.Filter.FILTER_SIGNAL, Resource.Filter.EXERCISE_ACTIVITY_VALUE);
                 intent.putExtra(Resource.Type.PART, mVPExercise.getCurrentItem());
-                intent.putExtra(Resource.ParamsKey.AUDIO_PARTENDTIME, Tools.listToIntArray(mAudio.getAudioPartEndTime()));
-                if(mAudio.getAudioPartEndTime() !=null ){
+                intent.putExtra(Resource.ParamsKey.AUDIO_PARTENDTIME, Tools.listToIntArray(AudioListManager.getInstance().getCurrentAudio().getAudioPartEndTime()));
+                if (AudioListManager.getInstance().getCurrentAudio().getAudioPartEndTime() != null) {
 
-                    Log.e("pengpeng ExerActivity", mAudio.getAudioPartEndTime().toString());
-                }else{
+                    Log.e("pengpeng ExerActivity", AudioListManager.getInstance().getCurrentAudio().getAudioPartEndTime().toString());
+                } else {
                     Log.e("pengpeng ExerActivity", "null");
                 }
                 intent.putExtra(Resource.PlayerStatus.CONTROL_KEY, Resource.PlayerStatus.CONTROL_PLAY_BTN);
@@ -243,38 +212,38 @@ public class ExerciseActivity extends ELifeBaseActivity implements View.OnClickL
 
     }
 
+    class AnswerHolder {
+        public String answerId;
+        public String answer;
+    }
+
+    private Map<Integer, List<AnswerHolder>> answerMap = new HashMap<>();
+
     @Override
-    public void addAudioData(Audio audioAnswer) {
+    public void addAudioData(Audio audio) {
 
-        standardAnswer0 = audioAnswer.getAudioStandardAnswer().get(0);
-        standardAnswer1 = audioAnswer.getAudioStandardAnswer().get(1);
-        standardAnswer2 = audioAnswer.getAudioStandardAnswer().get(2);
-
-
-        Log.i("--------0", audioAnswer.getAudioStandardAnswer().get(0).toString());
-        Log.i("--------2", audioAnswer.getAudioStandardAnswer().get(2).toString());
-
-
-            for (int i = 0; i < standardAnswer0.size(); i++) {
-                grid_answer_id0[i] = "(" + (i + 1) + ")";
-                grid_answer_detail0[i] = standardAnswer0.get(i);
-                Log.i("--------standanswer0", grid_answer_detail0[i]);
+        List<List<String>> mTotalAnswer = audio.getAudioStandardAnswer();
+        if (mTotalAnswer != null) {
+            for (int i = 0; i < mTotalAnswer.size(); i++) {
+                List<AnswerHolder> answerHolderList = convertToAnswerHolder(mTotalAnswer.get(i));
+                answerMap.put(i, answerHolderList);
             }
+        }
 
+        mGVAdapter = new MyAdapter(this);
+        mGvAnswer.setAdapter(mGVAdapter);
 
-            for (int i = 0; i < standardAnswer1.size(); i++) {
-                grid_answer_id1[i] = "(" + (i + 1) + ")";
-                grid_answer_detail1[i] = standardAnswer1.get(i);
-                Log.i("--------standanswer1", grid_answer_detail1[i]);
-            }
+    }
 
-
-            for (int i = 0; i < standardAnswer2.size(); i++) {
-                grid_answer_id2[i] = "(" + (i + 1) + ")";
-                grid_answer_detail2[i] = standardAnswer2.get(i);
-                Log.i("--------standanswer2", grid_answer_detail2[i]);
-            }
-
+    private List<AnswerHolder> convertToAnswerHolder(List<String> partAnswer) {
+        List<AnswerHolder> list = new ArrayList<>();
+        for (int i = 0; i < partAnswer.size(); i++) {
+            AnswerHolder holder = new AnswerHolder();
+            holder.answerId = "(" + (i + 1) + ")";
+            holder.answer = partAnswer.get(i);
+            list.add(holder);
+        }
+        return list;
     }
 
 
@@ -307,16 +276,28 @@ public class ExerciseActivity extends ELifeBaseActivity implements View.OnClickL
 
     class MyAdapter extends BaseAdapter {
 
+        int part = 0;
+        private LayoutInflater inflater;
+
+        MyAdapter(Context context) {
+            inflater = LayoutInflater.from(context);
+
+        }
+
+        public void setPart(int part) {
+            this.part = part;
+        }
+
 
         @Override
         public int getCount() {
-                return grid_answer_detail0.length;
+            return answerMap.get(part).size();
 
         }
 
         @Override
         public Object getItem(int position) {
-            return position;
+            return answerMap.get(part).get(position);
         }
 
         @Override
@@ -327,21 +308,11 @@ public class ExerciseActivity extends ELifeBaseActivity implements View.OnClickL
         @Override
         public View getView(int position, View view, ViewGroup parent) {
             View view1 = inflater.inflate(R.layout.item_gridview, parent, false);
-            TextView tv_answer_id = (TextView) view1.findViewById(R.id.answer_id);
-            TextView tv_answer_detail = (TextView) view1.findViewById(R.id.answer_detail);
-             answerflag0 = true;
-            if (answerflag0 == true) {
-                tv_answer_id.setText(grid_answer_id0[position]);
-                tv_answer_detail.setText(grid_answer_detail0[position]);
-            }
-            if (answerflag1 == true) {
-                tv_answer_id.setText(grid_answer_id1[position]);
-                tv_answer_detail.setText(grid_answer_detail1[position]);
-            }
-            if (answerflag2 == true) {
-                tv_answer_id.setText(grid_answer_id2[position]);
-                tv_answer_detail.setText(grid_answer_detail2[position]);
-            }
+            TextView mTVAnswerId = (TextView) view1.findViewById(R.id.answer_id);
+            TextView mTVAnswer = (TextView) view1.findViewById(R.id.answer_detail);
+            mTVAnswerId.setText(((AnswerHolder) getItem(position)).answerId);
+            mTVAnswer.setText(((AnswerHolder) getItem(position)).answer);
+
             return view1;
         }
 

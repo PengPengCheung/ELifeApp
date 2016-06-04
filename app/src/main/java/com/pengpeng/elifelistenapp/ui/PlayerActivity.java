@@ -56,33 +56,30 @@ public class PlayerActivity extends ELifeBaseActivity implements View.OnClickLis
     private TextView mTVAudioTitle;
 
 
-
     //txt按钮
     @ViewInject(R.id.iv_text_btn)
     private ImageView mIVTxtBtn;
 
 
-
-
-//    private NetworkAudioPlayer mPlayer;
+    //    private NetworkAudioPlayer mPlayer;
     private Audio mAudio;
-//    private AudioListManager mManager;
-    private int index;
+    //    private AudioListManager mManager;
+//    private int index;
     private PlayerActivityReceiver mReceiver;
     private SeekbarUpdateReceiver mSeekBarReceiver;
 
 
     private void updateProgress(int progress) {
         if (mAudio != null) {
-                int totalTime = mAudio.getAudioPartEndTime().get(2);
-                int currentTime = progress;
-                int seekBarMax = mSeekbar.getMax();
-                Log.e("Progress: ", totalTime + " " + currentTime + " " + seekBarMax);
-                if (totalTime > 0 && currentTime > 0 && seekBarMax > 0) {
-                    Log.i("Progress: ", String.valueOf(mSeekbar.getProgress()));
-                    mTVStart.setText(Tools.getTimeText(currentTime));
-                    mSeekbar.setProgress((int) (seekBarMax * (float) currentTime / totalTime));
-                }
+            int totalTime = mAudio.getAudioPartEndTime().get(2);
+            int currentTime = progress;
+            int seekBarMax = mSeekbar.getMax();
+//                Log.e("Progress: ", totalTime + " " + currentTime + " " + seekBarMax);
+            if (totalTime > 0 && currentTime > 0 && seekBarMax > 0) {
+//                    Log.i("Progress: ", String.valueOf(mSeekbar.getProgress()));
+                mTVStart.setText(Tools.getTimeText(currentTime));
+                mSeekbar.setProgress((int) (seekBarMax * (float) currentTime / totalTime));
+            }
         }
     }
 
@@ -92,7 +89,7 @@ public class PlayerActivity extends ELifeBaseActivity implements View.OnClickLis
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Intent intent = getIntent();
-        index = intent.getIntExtra(Resource.ParamsKey.AUDIO_INDEX, -1);
+//        index = intent.getIntExtra(Resource.ParamsKey.AUDIO_INDEX, -1);
         init();
         String title = intent.getStringExtra(Resource.ParamsKey.AUDIO_TITLE);
         if (title != null) {
@@ -159,8 +156,8 @@ public class PlayerActivity extends ELifeBaseActivity implements View.OnClickLis
                 break;
             case R.id.iv_back:
                 Intent backIntent = new Intent(this, MainActivity.class);
-                AudioListManager.getInstance().setCurrentIndex(index);
-                backIntent.putExtra(Resource.ParamsKey.AUDIO_INDEX, index);
+//                AudioListManager.getInstance().setCurrentIndex(index);
+                backIntent.putExtra(Resource.ParamsKey.AUDIO_INDEX, AudioListManager.getInstance().getCurrentIndex());
                 startActivity(backIntent);
                 PlayerActivity.this.finish();
                 break;
@@ -169,12 +166,13 @@ public class PlayerActivity extends ELifeBaseActivity implements View.OnClickLis
                 Log.i("PlayerActivity", "play");
                 break;
             case R.id.iv_next_btn:
-                ++index;
-                if(index>AudioListManager.getInstance().getCurrentListSize()-1){
-                    Toast.makeText(this, "no more audio", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                AudioListManager.getInstance().setCurrentIndex(index);
+//                ++index;
+//                if(index>AudioListManager.getInstance().getCurrentListSize()-1){
+//                    Toast.makeText(this, "no more audio", Toast.LENGTH_SHORT).show();
+//                    return;
+//                }
+//                AudioListManager.getInstance().setCurrentIndex(index);
+                AudioListManager.getInstance().nextAudio();
                 mAudio = AudioListManager.getInstance().getCurrentAudio();
                 sendIntent(Resource.PlayerStatus.CONTROL_NEXT_BTN, mAudio.getAudioUrl());
                 mTVAudioTitle.setText(mAudio.getAudioTitle());
@@ -182,12 +180,13 @@ public class PlayerActivity extends ELifeBaseActivity implements View.OnClickLis
 
                 break;
             case R.id.iv_pre_btn:
-                --index;
-                if(index<0){
-                    Toast.makeText(this, "no more audio", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                AudioListManager.getInstance().setCurrentIndex(index);
+//                --index;
+//                if(index<0){
+//                    Toast.makeText(this, "no more audio", Toast.LENGTH_SHORT).show();
+//                    return;
+//                }
+//                AudioListManager.getInstance().setCurrentIndex(index);
+                AudioListManager.getInstance().preAudio();
                 mAudio = AudioListManager.getInstance().getCurrentAudio();
                 sendIntent(Resource.PlayerStatus.CONTROL_PREVIOUS_BTN, mAudio.getAudioUrl());
                 mTVAudioTitle.setText(mAudio.getAudioTitle());
@@ -206,8 +205,8 @@ public class PlayerActivity extends ELifeBaseActivity implements View.OnClickLis
         }
     }
 
-    private void sendIntent(int controlKey, String audioUrl){
-        if(audioUrl == null){
+    private void sendIntent(int controlKey, String audioUrl) {
+        if (audioUrl == null) {
             sendIntent(controlKey);
             return;
         }
@@ -257,19 +256,19 @@ public class PlayerActivity extends ELifeBaseActivity implements View.OnClickLis
         super.onDestroy();
     }
 
-    class SeekbarUpdateReceiver extends BroadcastReceiver{
+    class SeekbarUpdateReceiver extends BroadcastReceiver {
         /**
          * @param context The Context in which the receiver is running.
          * @param intent  The Intent being received.
          */
         @Override
         public void onReceive(Context context, Intent intent) {
-           if(intent != null){
-               int progress = intent.getIntExtra(Resource.PlayerStatus.GET_PROGRESS_KEY, -1);
-               if(progress!=-1){
-                   updateProgress(progress);
-               }
-           }
+            if (intent != null) {
+                int progress = intent.getIntExtra(Resource.PlayerStatus.GET_PROGRESS_KEY, -1);
+                if (progress != -1) {
+                    updateProgress(progress);
+                }
+            }
         }
     }
 
@@ -281,9 +280,9 @@ public class PlayerActivity extends ELifeBaseActivity implements View.OnClickLis
          */
         @Override
         public void onReceive(Context context, Intent intent) {
-            if(intent != null){
+            if (intent != null) {
                 int status = intent.getIntExtra(Resource.PlayerStatus.UPDATE_KEY, -1);
-                switch (status){
+                switch (status) {
                     case Resource.PlayerStatus.PLAYING:
                         mIVPlayBtn.setImageResource(R.drawable.pause);
                         break;
@@ -292,6 +291,8 @@ public class PlayerActivity extends ELifeBaseActivity implements View.OnClickLis
                         break;
                     case Resource.PlayerStatus.STOP:
                         mIVPlayBtn.setImageResource(R.drawable.play);
+                        mSeekbar.setProgress(0);
+                        mTVStart.setText("0:00");
                         break;
                 }
                 Log.i(TAG, "onReceive");

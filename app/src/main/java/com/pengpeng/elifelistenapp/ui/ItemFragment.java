@@ -38,6 +38,7 @@ public class ItemFragment extends Fragment implements AudioListIView, SwipeRefre
     private RecyclerViewAdapter mAdapter;
     private List<Audio> mData;
     private AudioListPresenter mPresenter;
+    private boolean isPull = true; // 下拉刷新为true，上拉加载为false
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -65,7 +66,7 @@ public class ItemFragment extends Fragment implements AudioListIView, SwipeRefre
         }
 
         mPresenter = new AudioListPresenterImpl(this);
-        if(mAdapter==null){
+        if (mAdapter == null) {
             mAdapter = new RecyclerViewAdapter(getActivity().getApplicationContext());
         }
 
@@ -83,7 +84,7 @@ public class ItemFragment extends Fragment implements AudioListIView, SwipeRefre
                 R.color.accent);
         mSwipeRefreshWidget.setOnRefreshListener(this);//实现onRefresh方法，进行刷新
 
-        mRecyclerView = (RecyclerView)view.findViewById(R.id.recycle_view);
+        mRecyclerView = (RecyclerView) view.findViewById(R.id.recycle_view);
         mRecyclerView.setHasFixedSize(true);
 
         mLayoutManager = new LinearLayoutManager(getActivity());
@@ -106,11 +107,11 @@ public class ItemFragment extends Fragment implements AudioListIView, SwipeRefre
         return view;
     }
 
-    private RecyclerViewAdapter.OnItemClickListener mOnItemClickListener = new RecyclerViewAdapter.OnItemClickListener(){
+    private RecyclerViewAdapter.OnItemClickListener mOnItemClickListener = new RecyclerViewAdapter.OnItemClickListener() {
 
         @Override
         public void onItemClick(View view, int position) {
-            ((MainActivity)getActivity()).setPlayingAudio(mData.get(position), position);
+            ((MainActivity) getActivity()).setPlayingAudio(mData.get(position), position);
         }
     };
 
@@ -133,6 +134,7 @@ public class ItemFragment extends Fragment implements AudioListIView, SwipeRefre
                 //加载更多
                 Log.d(Resource.Debug.TAG, "loading more data");
                 mPresenter.loadAudioList("123", mType);
+                isPull = false;
             }
         }
     };
@@ -153,11 +155,11 @@ public class ItemFragment extends Fragment implements AudioListIView, SwipeRefre
     @Override
     public void onRefresh() {
 
-        if(mData !=null){
+        if (mData != null) {
             mData.clear();
         }
         mPresenter.loadAudioList("123", mType);
-
+        isPull = true;
     }
 
     @Override
@@ -170,34 +172,35 @@ public class ItemFragment extends Fragment implements AudioListIView, SwipeRefre
 
         mAdapter.setIsShowFooter(true);
 
-        if(mData == null){
+        if (mData == null) {
             mData = new ArrayList<>();
         }
 
         Log.i(Resource.Debug.TAG, "before add audio");
         mData.addAll(audioList);
-        AudioListManager.getInstance().addAll(audioList, Tools.getType(mType));
+        AudioListManager.getInstance().addAllAtFront(audioList, Tools.getType(mType), isPull);
+
 
         Log.i(Resource.Debug.TAG, "before new Adapter");
-        if(mAdapter==null){
+        if (mAdapter == null) {
             mAdapter = new RecyclerViewAdapter(getActivity().getApplicationContext());
         }
 
         Log.i(Resource.Debug.TAG, "before add data");
 
-        if(mAdapter.getItemCount() == 1){
+        if (mAdapter.getItemCount() == 1) {
             Log.i(Resource.Debug.TAG, "add data");
 
             //当item只有1项时，此时已经绑定了数据，mData这个对象引用指向了列表数据集，所以前面的addAll()方法加进了数据集中，后面就不需要再append了，只需要通知数据集发生改变即可
             mAdapter.setmData(mData);
-        }else{
+        } else {
             //如果没有更多数据了,则隐藏footer布局
-            if(audioList == null || audioList.size() == 0){
+            if (audioList == null || audioList.size() == 0) {
                 mAdapter.setIsShowFooter(false);
             }
             Log.i(Resource.Debug.TAG, "append data");
             mAdapter.notifyDataSetChanged();
-           //mAdapter.appendData(audioList);
+            //mAdapter.appendData(audioList);
         }
     }
 

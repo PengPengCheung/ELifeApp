@@ -56,6 +56,17 @@ public class Tools {
         return null;
     }
 
+    public static String convertListToString(List<Integer> list){
+        StringBuilder s = new StringBuilder("[");
+        for(int i=0;i<list.size();i++){
+            s.append(list.get(i));
+            s.append(",");
+        }
+        s.deleteCharAt(s.length() - 1);
+        s.append("]");
+        return s.toString();
+    }
+
     public static String getType(int pageIndex){
         String type = null;
         switch(pageIndex){
